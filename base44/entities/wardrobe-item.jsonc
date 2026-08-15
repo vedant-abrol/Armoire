@@ -1,0 +1,87 @@
+{
+  "name": "WardrobeItem",
+  "description": "One unique physical garment in a user's private Armoire wardrobe.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The user-facing garment name."
+    },
+    "part": {
+      "type": "string",
+      "enum": ["upperbody", "wholebody_up", "lowerbody", "accessories_up", "shoes"],
+      "description": "The existing Armoire category identifier."
+    },
+    "color": {
+      "type": "string",
+      "description": "The primary garment color, normally a six-digit hex value."
+    },
+    "secondaryColor": {
+      "type": "string",
+      "description": "An optional distinct secondary garment color."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Short descriptive garment tags."
+    },
+    "image": {
+      "type": "string",
+      "description": "The durable private Base44 garment cutout URI, or a legacy public garment URL."
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "The durable private Base44 thumbnail URI, or a legacy public thumbnail URL."
+    },
+    "modeledImage": {
+      "type": "string",
+      "description": "An optional modeled editorial image URL."
+    },
+    "palette": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Suggested colors sampled from the garment image."
+    },
+    "status": {
+      "type": "string",
+      "default": "active",
+      "description": "The garment's current wardrobe status."
+    },
+    "importJobId": {
+      "type": "string",
+      "description": "Optional ImportJob identifier used for idempotent approval of one reviewed garment."
+    },
+    "demoFixture": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only for canonical records seeded for the dedicated hackathon demo account."
+    },
+    "demoFixtureKey": {
+      "type": "string",
+      "description": "Stable canonical key used to seed and update one demo garment idempotently."
+    },
+    "demoSeedVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Canonical demo manifest version last applied to this fixture."
+    },
+    "fixtureOrder": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Stable editorial ordering for deterministic demo gallery layout."
+    }
+  },
+  "required": ["name", "part"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "user_condition": { "role": "user" } },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": { "created_by": "{{user.email}}" },
+    "update": { "created_by": "{{user.email}}" },
+    "delete": { "created_by": "{{user.email}}" }
+  }
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Black Trousers</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#505050"/>
+      <stop offset=".42" stop-color="#292a2a"/>
+      <stop offset="1" stop-color="#202121"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="136" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#50514f;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#202121;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M165 92Q256 72 347 92L362 446L287 446L256 235L225 446L150 446Z" fill="url(#cloth)"/><path d="M167 110q89 25 178 0" fill="none" stroke="var(--detail)" stroke-width="8" opacity=".42"/><path d="M256 106v129" stroke="var(--detail)" opacity=".4"/><path d="M182 140l-21 72M330 140l21 72" stroke="var(--detail)" opacity=".35"/><path d="M150 430l74 1M362 430l-74 1" stroke="var(--detail)" opacity=".33"/></g></g>
+</svg>

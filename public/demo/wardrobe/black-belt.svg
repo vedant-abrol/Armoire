@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Black Belt</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#515251"/>
+      <stop offset=".42" stop-color="#2b2c2b"/>
+      <stop offset="1" stop-color="#222222"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="923" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#a6aaa7;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#222222;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M58 229h355v55H58q-24-27 0-55z" fill="url(#cloth)"/><rect x="395" y="210" width="73" height="93" rx="9" fill="none" stroke="#a6aaa7" stroke-width="18"/><path d="M412 256h51" stroke="#a6aaa7" stroke-width="9"/><circle cx="91" cy="256" r="5" fill="#7c7c7c"/></g></g>
+</svg>

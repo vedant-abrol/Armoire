@@ -1,0 +1,69 @@
+{
+  "name": "WardrobeAppearance",
+  "description": "One observed appearance of a unique physical WardrobeItem in an import source or synthetic demo fixture.",
+  "type": "object",
+  "properties": {
+    "wardrobeItemId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The unique physical WardrobeItem recognized in this appearance."
+    },
+    "sourcePhotoId": {
+      "type": "string",
+      "description": "Optional real SourcePhoto containing this appearance. Demo fixtures intentionally omit it."
+    },
+    "importJobId": {
+      "type": "string",
+      "description": "Optional real ImportJob that produced or matched this appearance."
+    },
+    "boundingBox": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "integer", "minimum": 0, "maximum": 999 },
+        "y": { "type": "integer", "minimum": 0, "maximum": 999 },
+        "width": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      },
+      "required": ["x", "y", "width", "height"],
+      "description": "Normalized source-photo box for real imports when available."
+    },
+    "detectionConfidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence that the source region contains a distinct garment."
+    },
+    "duplicateConfidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Conservative confidence that this appearance is the same physical WardrobeItem."
+    },
+    "demoFixture": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only for synthetic count-only demo appearances."
+    },
+    "demoFixtureKey": {
+      "type": "string",
+      "description": "Stable idempotency key for a synthetic demo appearance."
+    },
+    "demoSeedVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Canonical demo manifest version last applied to this fixture."
+    }
+  },
+  "required": ["wardrobeItemId"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "user_condition": { "role": "user" } },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": { "created_by": "{{user.email}}" },
+    "update": { "created_by": "{{user.email}}" },
+    "delete": { "created_by": "{{user.email}}" }
+  }
+}

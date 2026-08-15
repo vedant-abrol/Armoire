@@ -9,9 +9,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "npm run build"
+    "check": "npm run demo:verify && npm run demo:test-seed && npm run build",
+    "demo:assets": "node scripts/generate-demo-assets.mjs",
+    "demo:verify": "node scripts/verify-demo-fixtures.mjs",
+    "demo:test-seed": "node --experimental-strip-types scripts/test-demo-seed.mjs",
+    "demo:seed": "node scripts/reset-demo-account.mjs --seed-only",
+    "demo:reset": "node scripts/reset-demo-account.mjs"
   },
   "dependencies": {
+    "@base44/sdk": "^0.8.41",
     "@fontsource-variable/instrument-sans": "^5.2.8",
     "@phosphor-icons/react": "^2.1.10",
     "@unpic/react": "^1.0.2",

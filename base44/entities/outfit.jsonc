@@ -1,0 +1,70 @@
+{
+  "name": "Outfit",
+  "description": "A creator-private saved composition made only from WardrobeItems the user owns.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Editorial outfit name."
+    },
+    "occasion": {
+      "type": "string",
+      "description": "Short intended context such as casual weekend or evening."
+    },
+    "season": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "One or more suitable seasons."
+    },
+    "garmentIds": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": { "type": "string" },
+      "description": "Existing WardrobeItem IDs in this saved composition."
+    },
+    "anchorGarmentId": {
+      "type": "string",
+      "description": "Optional WardrobeItem around which the look was styled."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 800,
+      "description": "Concise explanation of why the combination works."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["saved", "archived"],
+      "default": "saved",
+      "description": "Current saved-outfit state."
+    },
+    "demoFixture": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only for a canonical seeded demo outfit."
+    },
+    "demoFixtureKey": {
+      "type": "string",
+      "description": "Stable canonical key used to seed and update one demo outfit idempotently."
+    },
+    "demoSeedVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Canonical demo manifest version last applied to this fixture."
+    }
+  },
+  "required": ["name", "garmentIds", "status"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "user_condition": { "role": "user" } },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": { "created_by": "{{user.email}}" },
+    "update": { "created_by": "{{user.email}}" },
+    "delete": { "created_by": "{{user.email}}" }
+  }
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Camel Chore Jacket</title>
+  <desc id="desc">Editorial product illustration of a camel chore jacket.</desc>
+  <defs>
+    <linearGradient id="backdrop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eee7dc"/>
+      <stop offset="1" stop-color="#d8ccbb"/>
+    </linearGradient>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c39b6c"/>
+      <stop offset=".5" stop-color="#a97b49"/>
+      <stop offset="1" stop-color="#865e36"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#3a2b1e" flood-opacity=".24"/>
+    </filter>
+  </defs>
+  <rect width="600" height="720" fill="url(#backdrop)"/>
+  <circle cx="490" cy="126" r="112" fill="#f7f2e9" opacity=".62"/>
+  <ellipse cx="302" cy="638" rx="183" ry="25" fill="#6c5742" opacity=".14"/>
+  <g filter="url(#shadow)">
+    <g stroke="#75502e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M198 168l59-43q43 28 86 0l59 43 64 48 44 298-70 19-55-258 13 328q-98 31-196 0l13-328-55 258-70-19 44-298z" fill="url(#cloth)"/>
+      <path d="M257 125l43 58-40 47-36-84zm86 0-43 58 40 47 36-84z" fill="#c8a57a" opacity=".86"/>
+      <path d="M300 183v428" fill="none" stroke="#d1ae81" stroke-width="3" opacity=".62"/>
+      <path d="M216 256h61v84q-31 18-61 0zm107 0h61v84q-31 18-61 0zM210 405h69v103q-35 19-69 0zm111 0h69v103q-35 19-69 0z" fill="none" stroke="#d5b58d" stroke-width="3" opacity=".72"/>
+      <g fill="#6f4c2c" stroke="none">
+        <circle cx="300" cy="272" r="4"/><circle cx="300" cy="336" r="4"/><circle cx="300" cy="400" r="4"/><circle cx="300" cy="464" r="4"/><circle cx="300" cy="528" r="4"/>
+      </g>
+    </g>
+  </g>
+</svg>

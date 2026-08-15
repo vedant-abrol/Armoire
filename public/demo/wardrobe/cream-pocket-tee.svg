@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Cream Pocket Tee</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e3dccd"/>
+      <stop offset=".42" stop-color="#ddd4c2"/>
+      <stop offset="1" stop-color="#aca597"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="255" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#bdb39f;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#aca597;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M174 122L216 92Q256 116 296 92L338 122L426 198L374 248L329 199L334 438Q256 463 178 438L183 199L138 248L86 198Z M225 102Q256 128 287 102Q279 158 256 158Q233 158 225 102Z" fill="url(#cloth)" fill-rule="evenodd"/><path d="M181 416Q256 438 332 416" fill="none" stroke="var(--detail)" opacity=".28"/><path d="M278 191h39v48q-19 11-39 0z" fill="none" stroke="var(--detail)" opacity=".55"/></g></g>
+</svg>
