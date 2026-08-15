@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Brown Derby Shoes</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8a6f5b"/>
+      <stop offset=".42" stop-color="#704f37"/>
+      <stop offset="1" stop-color="#573e2b"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="509" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#9b7454;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#573e2b;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><g transform="translate(74 -45) scale(.78)" opacity=".7"><path d="M69 305q44-119 151-122 52 3 98 45 53 45 133 58 35 7 29 51-177 44-414 8z" fill="url(#cloth)"/><g stroke="#a28d7d" stroke-width="5" opacity=".72"><path d="M182 224l78 23M190 207l82 25M202 192l78 25"/></g><path d="M68 330q228 36 411-5l-5 33q-204 45-407 12z" fill="#9b7454"/></g><g><path d="M69 305q44-119 151-122 52 3 98 45 53 45 133 58 35 7 29 51-177 44-414 8z" fill="url(#cloth)"/><g stroke="#a28d7d" stroke-width="5" opacity=".72"><path d="M182 224l78 23M190 207l82 25M202 192l78 25"/></g><path d="M68 330q228 36 411-5l-5 33q-204 45-407 12z" fill="#9b7454"/></g></g></g>
+</svg>

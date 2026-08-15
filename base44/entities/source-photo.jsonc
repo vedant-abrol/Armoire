@@ -1,0 +1,45 @@
+{
+  "name": "SourcePhoto",
+  "description": "One private personal photo uploaded by an authenticated Armoire user for garment detection.",
+  "type": "object",
+  "properties": {
+    "privateFileUri": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The stable private Base44 file URI. Signed URLs are generated only when the file is actively needed."
+    },
+    "originalFilename": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The original local filename shown to the owner."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["uploaded", "analyzing", "review", "failed"],
+      "default": "uploaded",
+      "description": "The current ingestion and analysis state."
+    },
+    "detectedItemCount": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Number of garment candidates detected in this photo."
+    },
+    "analysisError": {
+      "type": "string",
+      "description": "A safe user-facing analysis failure message, when applicable."
+    }
+  },
+  "required": ["privateFileUri", "originalFilename", "status"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "user_condition": { "role": "user" } },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": { "created_by": "{{user.email}}" },
+    "update": { "created_by": "{{user.email}}" },
+    "delete": { "created_by": "{{user.email}}" }
+  }
+}

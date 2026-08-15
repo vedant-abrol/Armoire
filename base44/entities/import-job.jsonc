@@ -1,0 +1,159 @@
+{
+  "name": "ImportJob",
+  "description": "A private garment candidate detected in a SourcePhoto and awaiting human review.",
+  "type": "object",
+  "properties": {
+    "sourcePhotoId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The owning SourcePhoto record ID."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected", "complete", "failed"],
+      "default": "pending",
+      "description": "The candidate's detection decision and final import state."
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["review", "approved_detection", "reviewed", "preparing_crop", "generation_ready", "generating_garment", "preparing_cutout", "garment_review", "complete", "rejected", "failed"],
+      "default": "review",
+      "description": "The current detection, generation, or garment-review stage."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A concise, specific garment name."
+    },
+    "part": {
+      "type": "string",
+      "enum": ["upperbody", "wholebody_up", "lowerbody", "accessories_up", "shoes"],
+      "description": "The existing Armoire category identifier."
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "The primary six-digit hex color."
+    },
+    "secondaryColor": {
+      "type": "string",
+      "pattern": "^(#[0-9A-Fa-f]{6})?$",
+      "description": "An optional genuinely distinct secondary six-digit hex color."
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": { "type": "string" },
+      "description": "One to four useful garment details."
+    },
+    "boundingBox": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "integer", "minimum": 0, "maximum": 999 },
+        "y": { "type": "integer", "minimum": 0, "maximum": 999 },
+        "width": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      },
+      "required": ["x", "y", "width", "height"],
+      "description": "A tight integer bounding box normalized to a 1000 by 1000 image."
+    },
+    "detectionConfidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "The model's confidence that this is a distinct wearable item."
+    },
+    "cropUri": {
+      "type": "string",
+      "description": "Legacy alias of candidateCropUri retained for existing Phase 2 records."
+    },
+    "cutoutUri": {
+      "type": "string",
+      "description": "Legacy alias of generatedCutoutUri retained for existing Phase 2 records."
+    },
+    "candidateCropUri": {
+      "type": "string",
+      "description": "Durable private Base44 file URI for the focused source crop used on every generation attempt."
+    },
+    "generatedSourceUri": {
+      "type": "string",
+      "description": "Durable private URI for the latest raw GPT Image result before browser-safe chroma cleanup."
+    },
+    "generatedCutoutUri": {
+      "type": "string",
+      "description": "Durable private Base44 file URI for the transparent garment cutout shown in review and saved to the wardrobe."
+    },
+    "generationStatus": {
+      "type": "string",
+      "enum": ["idle", "preparing_crop", "ready_to_generate", "generating", "preparing_cutout", "ready", "approved", "rejected", "failed"],
+      "default": "idle",
+      "description": "Detailed status of the Phase 3 garment-generation workflow."
+    },
+    "generationAttempts": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Number of image-edit requests made for this candidate."
+    },
+    "generationChromaKey": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Flat background color requested from GPT Image for browser-side transparency cleanup."
+    },
+    "generationPrompt": {
+      "type": "string",
+      "description": "The exact garment-fidelity prompt used for the latest image-edit request."
+    },
+    "regenerationDirection": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Optional owner-provided correction for the latest regeneration attempt."
+    },
+    "generationError": {
+      "type": "string",
+      "description": "A safe user-facing generation or cutout preparation error."
+    },
+    "wardrobeItemId": {
+      "type": "string",
+      "description": "The WardrobeItem created when the generated garment is approved."
+    },
+    "deduplicationStatus": {
+      "type": "string",
+      "enum": ["not_checked", "no_match", "review_required", "same_item", "add_new", "unavailable"],
+      "default": "not_checked",
+      "description": "Phase 4 physical-item deduplication result for this candidate."
+    },
+    "deduplicationMatchWardrobeItemId": {
+      "type": "string",
+      "description": "Plausible existing WardrobeItem selected by conservative similarity reasoning."
+    },
+    "deduplicationConfidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Similarity confidence returned by the trusted deduplication backend."
+    },
+    "deduplicationReason": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Safe concise explanation for the proposed physical-item match."
+    },
+    "error": {
+      "type": "string",
+      "description": "A safe user-facing candidate error, when applicable."
+    }
+  },
+  "required": ["sourcePhotoId", "status", "stage", "name", "part", "color", "tags", "boundingBox", "detectionConfidence"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "user_condition": { "role": "user" } },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": { "created_by": "{{user.email}}" },
+    "update": { "created_by": "{{user.email}}" },
+    "delete": { "created_by": "{{user.email}}" }
+  }
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Grey Beanie</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a6a6a2"/>
+      <stop offset=".42" stop-color="#92928e"/>
+      <stop offset="1" stop-color="#72726f"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="400" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#b9b8b2;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#72726f;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M135 304q3-198 121-211 118 13 121 211z" fill="url(#cloth)"/><path d="M124 290h264v94q-132 38-264 0z" fill="var(--detail)" opacity=".72"/><g stroke="#c8c8c3" opacity=".38"><path d="M153 132v236"/><path d="M179 132v236"/><path d="M205 132v236"/><path d="M231 132v236"/><path d="M257 132v236"/><path d="M283 132v236"/><path d="M309 132v236"/><path d="M335 132v236"/><path d="M361 132v236"/></g></g></g>
+</svg>

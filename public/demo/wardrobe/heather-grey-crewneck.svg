@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Heather Grey Crewneck</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#adada9"/>
+      <stop offset=".42" stop-color="#9b9b96"/>
+      <stop offset="1" stop-color="#797975"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="496" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#c1c0ba;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#797975;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M169 124L216 91Q256 116 296 91L343 124L393 162L429 386L374 399L328 202L334 434Q256 459 178 434L184 202L138 399L83 386L119 162Z" fill="url(#cloth)"/><path d="M225 101Q256 128 287 101Q279 155 256 155Q233 155 225 101Z" fill="var(--detail)" opacity=".6"/><g stroke="var(--detail)" opacity=".3"><path d="M178 410q78 23 156 0" stroke-width="12"/><path d="M92 374l50-12M370 362l50 12" stroke-width="10"/></g></g></g>
+</svg>

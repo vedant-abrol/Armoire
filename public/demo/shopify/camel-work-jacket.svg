@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Camel Work Jacket</title>
+  <desc id="desc">Editorial product illustration of a warm camel work jacket.</desc>
+  <defs>
+    <linearGradient id="backdrop" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#d9d0c4"/>
+      <stop offset="1" stop-color="#f2ece3"/>
+    </linearGradient>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b88b57"/>
+      <stop offset=".56" stop-color="#9a6d3d"/>
+      <stop offset="1" stop-color="#714b2b"/>
+    </linearGradient>
+    <linearGradient id="collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#684328"/>
+      <stop offset="1" stop-color="#8b6038"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#30251c" flood-opacity=".25"/>
+    </filter>
+  </defs>
+  <rect width="600" height="720" fill="url(#backdrop)"/>
+  <path d="M0 122C154 36 335 55 600 0v155C360 210 166 188 0 250z" fill="#faf6ef" opacity=".48"/>
+  <ellipse cx="300" cy="641" rx="180" ry="24" fill="#63482f" opacity=".15"/>
+  <g filter="url(#shadow)" stroke="#654126" stroke-width="2" stroke-linejoin="round">
+    <path d="M197 166l62-41q41 24 82 0l62 41 69 54 36 288-73 19-49-247 12 326q-98 30-196 0l12-326-49 247-73-19 36-288z" fill="url(#cloth)"/>
+    <path d="M259 125l41 56-46 51-29-91zm82 0-41 56 46 51 29-91z" fill="url(#collar)"/>
+    <path d="M300 181v429" fill="none" stroke="#c09664" stroke-width="3" opacity=".63"/>
+    <path d="M216 267h67v96h-67zm101 0h67v96h-67zM208 431h75v91h-75zm109 0h75v91h-75z" fill="#8c6035" opacity=".42" stroke="#c49a68" stroke-width="3"/>
+    <path d="M114 454l70-13m232 0 70 13" fill="none" stroke="#c49a68" stroke-width="3" opacity=".42"/>
+    <g fill="#51321e" stroke="none">
+      <circle cx="300" cy="260" r="4"/><circle cx="300" cy="328" r="4"/><circle cx="300" cy="396" r="4"/><circle cx="300" cy="464" r="4"/><circle cx="300" cy="532" r="4"/>
+    </g>
+  </g>
+</svg>

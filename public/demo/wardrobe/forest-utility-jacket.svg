@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Forest Utility Jacket</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#586c5f"/>
+      <stop offset=".42" stop-color="#334c3c"/>
+      <stop offset="1" stop-color="#283b2f"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="397" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#5d6f62;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#283b2f;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M168 122L213 91Q256 117 299 91L344 122L396 160L431 389L376 403L328 202L337 439Q256 465 175 439L184 202L136 403L81 389L116 160Z" fill="url(#cloth)"/><path d="M212 91l44 43-31 39-30-66zM300 91l-44 43 31 39 30-66z" fill="var(--detail)" opacity=".75"/><path d="M256 134v306" stroke="var(--detail)" stroke-width="2" opacity=".62"/><path d="M188 183h48v66q-24 14-48 0zM276 183h48v66q-24 14-48 0zM184 299h54v78q-27 15-54 0zM274 299h54v78q-27 15-54 0z" fill="none" stroke="var(--detail)" opacity=".66"/></g></g>
+</svg>

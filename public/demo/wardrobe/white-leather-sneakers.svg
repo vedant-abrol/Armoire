@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">White Leather Sneakers</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#efebe2"/>
+      <stop offset=".42" stop-color="#ebe7dc"/>
+      <stop offset="1" stop-color="#b7b4ac"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="195" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#bcb7ad;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#b7b4ac;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><g transform="translate(74 -44) scale(.78)" opacity=".7"><path d="M65 306q44-123 154-124 58 2 105 46 51 46 127 57 38 6 33 50-181 46-423 9z" fill="url(#cloth)"/><path d="M114 282l91-80 58 18-63 99zM272 231l73 50-33 42-75-74z" fill="#bcb7ad" opacity=".42"/><g fill="none" stroke="#f3f0e9" stroke-width="5" opacity=".82"><path d="M190 223l83 28M180 240l83 28M169 257l83 28M158 274l83 28"/></g><path d="M62 329q229 40 421-5l-5 40q-214 47-418 12z" fill="#bcb7ad"/><path d="M83 343q215 31 379-4" stroke="#8f8b83" stroke-width="4" opacity=".34"/></g><g><path d="M65 306q44-123 154-124 58 2 105 46 51 46 127 57 38 6 33 50-181 46-423 9z" fill="url(#cloth)"/><path d="M114 282l91-80 58 18-63 99zM272 231l73 50-33 42-75-74z" fill="#bcb7ad" opacity=".42"/><g fill="none" stroke="#f3f0e9" stroke-width="5" opacity=".82"><path d="M190 223l83 28M180 240l83 28M169 257l83 28M158 274l83 28"/></g><path d="M62 329q229 40 421-5l-5 40q-214 47-418 12z" fill="#bcb7ad"/><path d="M83 343q215 31 379-4" stroke="#8f8b83" stroke-width="4" opacity=".34"/></g></g></g>
+</svg>

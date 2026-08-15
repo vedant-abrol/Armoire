@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Blue Check Shirt</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#91aabd"/>
+      <stop offset=".42" stop-color="#7997ae"/>
+      <stop offset="1" stop-color="#5e7688"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="69" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#e2ddd1;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#5e7688;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M171 121L215 88Q256 111 297 88L341 121L390 157L428 382L372 397L327 202L337 445Q256 466 175 445L185 202L140 397L84 382L122 157Z" fill="url(#cloth)"/><path d="M215 88l41 42-30 37-28-55zM297 88l-41 42 30 37 28-55z" fill="var(--detail)" opacity=".75"/><path d="M256 130v315" stroke="var(--detail)" opacity=".45"/><circle cx="256" cy="174.0" r="3.1" fill="#556a7a" opacity=".7"/><circle cx="256" cy="214.0" r="3.1" fill="#556a7a" opacity=".7"/><circle cx="256" cy="254.0" r="3.1" fill="#556a7a" opacity=".7"/><circle cx="256" cy="294.0" r="3.1" fill="#556a7a" opacity=".7"/><circle cx="256" cy="334.0" r="3.1" fill="#556a7a" opacity=".7"/><circle cx="256" cy="374.0" r="3.1" fill="#556a7a" opacity=".7"/><circle cx="256" cy="414.0" r="3.1" fill="#556a7a" opacity=".7"/><path d="M190 190h43v62q-21 12-43 0zM279 190h43v62q-21 12-43 0z" fill="none" stroke="var(--detail)" opacity="0.44"/><rect x="191" y="165" width="5" height="252" fill="#e2ddd1" opacity=".48"/><rect x="221" y="165" width="5" height="252" fill="#e2ddd1" opacity=".48"/><rect x="251" y="165" width="5" height="252" fill="#e2ddd1" opacity=".48"/><rect x="281" y="165" width="5" height="252" fill="#e2ddd1" opacity=".48"/><rect x="311" y="165" width="5" height="252" fill="#e2ddd1" opacity=".48"/><rect x="176" y="180" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="210" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="240" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="270" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="300" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="330" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="360" width="160" height="5" fill="#e2ddd1" opacity=".48"/><rect x="176" y="390" width="160" height="5" fill="#e2ddd1" opacity=".48"/><path d="M105 350l57-11M350 339l57 11" stroke="var(--detail)" opacity=".34"/></g></g>
+</svg>

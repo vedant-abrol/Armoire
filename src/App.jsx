@@ -1,10 +1,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Plus, Trash, X } from "@phosphor-icons/react";
+import { AuthScreen } from "./AuthScreen.jsx";
+import { DEMO_COMMERCE_FIXTURES } from "./demoCommerceFixtures.js";
 import { WardrobeImportFlow } from "./import-flow.jsx";
 import { OptimizedImage } from "./OptimizedImage.jsx";
-
-const STORAGE_KEY = "open-wardrobe-edits-v1";
-const DELETED_STORAGE_KEY = "open-wardrobe-deleted-v1";
+import { OutfitGallery, OutfitViewer } from "./outfits.jsx";
+import { getCurrentUser, logout } from "./services/authService.js";
+import { createShopifyCart, searchShopifyProducts } from "./services/commerceService.js";
+import {
+  deleteOutfit,
+  listOutfits,
+  listWardrobeAppearances,
+  prepareDemoWardrobe,
+  saveOutfit,
+  styleWardrobeItem,
+} from "./services/experienceService.js";
+import {
+  createWardrobeItem,
+  deleteWardrobeItem,
+  listWardrobeItems,
+  updateWardrobeItem,
+} from "./services/wardrobeService.js";
 
 const TYPES = [
   { id: "all", label: "All" },
@@ -14,51 +30,47 @@ const TYPES = [
   { id: "accessories_up", label: "Accessories", singular: "Accessory" },
   { id: "shoes", label: "Shoes", singular: "Shoes" },
 ];
+const NAV_TYPES = [...TYPES, { id: "outfits", label: "Outfits" }];
+const DEMO_EMAIL = "vedant1311nov@gmail.com";
+const DEMO_SEED_VERSION = 4;
+const DEMO_ITEM_COUNT = 80;
 
 const TYPE_MAP = Object.fromEntries(TYPES.map((type) => [type.id, type]));
 const TYPE_ORDER = Object.fromEntries(TYPES.slice(1).map((type, index) => [type.id, index]));
+const DEV_TEST_ITEM = {
+  name: "Test Black T-Shirt",
+  part: "upperbody",
+  color: "#191919",
+  secondaryColor: null,
+  tags: ["test", "casual"],
+  image: "/icon.svg",
+  thumbnail: "/icon.svg",
+  palette: ["#191919"],
+  status: "active",
+};
 
-
-function readEdits() {
+function formatMoney(amount, currencyCode) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return "";
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode }).format(value);
   } catch {
-    return {};
+    return `${currencyCode || ""} ${value.toFixed(2)}`.trim();
   }
 }
 
-
-function persistEdit(item) {
-  const edits = readEdits();
-  edits[item.id] = {
-    name: item.name || "",
-    part: item.part,
-    color: item.color || null,
-    secondaryColor: item.secondaryColor || null,
-    tags: item.tags || [],
+function emptyCommerceState() {
+  return {
+    status: "idle",
+    source: null,
+    authMode: null,
+    products: [],
+    selectedId: null,
+    error: "",
+    cartStatus: "idle",
+    cartError: "",
+    checkoutUrl: "",
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(edits));
-}
-
-function removePersistedEdit(id) {
-  const edits = readEdits();
-  delete edits[id];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(edits));
-}
-
-function readDeletedItems() {
-  try {
-    const value = JSON.parse(localStorage.getItem(DELETED_STORAGE_KEY) || "[]");
-    return new Set(Array.isArray(value) ? value : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function persistDeletedItem(id) {
-  const deleted = readDeletedItems();
-  deleted.add(id);
-  localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify([...deleted]));
 }
 
 function rgbToHex(red, green, blue) {
@@ -335,7 +347,7 @@ function ItemEditor({ draft, setDraft, palette, sampling, setSampling, sampleSta
   );
 }
 
-function ItemViewer({ item, onClose, onSave, onDelete }) {
+function ItemViewer({ item, items, appearanceCount, isDemoAccount, onClose, onSave, onDelete, onStyle, onSaveOutfit }) {
   const closeButtonRef = useRef(null);
   const imageRef = useRef(null);
   const samplingCanvasRef = useRef(null);
@@ -346,8 +358,16 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
   const [draft, setDraft] = useState({ name: item.name || "", part: item.part, color: item.color || "#9a9286", secondaryColor: item.secondaryColor || null, tags: [...(item.tags || [])] });
   const [shaking, setShaking] = useState(false);
   const [closeBlocked, setCloseBlocked] = useState(false);
+  const [mutation, setMutation] = useState("idle");
+  const [mutationError, setMutationError] = useState("");
+  const [styling, setStyling] = useState({ status: "idle", outfits: [], gap: null, gapError: "", error: "" });
+  const [commerce, setCommerce] = useState(emptyCommerceState);
+  const [savingOutfit, setSavingOutfit] = useState(null);
+  const [savedSuggestions, setSavedSuggestions] = useState([]);
   const type = TYPE_MAP[item.part]?.singular || "Wardrobe item";
   const hasModeledImage = Boolean(item.modeledImage);
+  const selectedCommerceProduct = commerce.products.find((product) => product.id === commerce.selectedId) || null;
+  const usingDemoCommerceFixtures = commerce.source === "demo-fixture";
   const pieceRotation = useMemo(() => {
     const hash = [...item.id].reduce((total, character) => total + character.charCodeAt(0), 0);
     return `${(hash % 9) - 4}deg`;
@@ -381,9 +401,10 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
   }, []);
 
   const requestClose = useCallback(() => {
+    if (mutation !== "idle") return;
     if (isDirty) nudgeUnsaved();
     else onClose();
-  }, [isDirty, nudgeUnsaved, onClose]);
+  }, [isDirty, mutation, nudgeUnsaved, onClose]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -410,6 +431,12 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
   useEffect(() => {
     setSampling(null);
     setSampleStatus("");
+    setMutation("idle");
+    setMutationError("");
+    setStyling({ status: "idle", outfits: [], gap: null, gapError: "", error: "" });
+    setCommerce(emptyCommerceState());
+    setSavingOutfit(null);
+    setSavedSuggestions([]);
     setPalette(item.palette || []);
     setDraft({ name: item.name || "", part: item.part, color: item.color || "#9a9286", secondaryColor: item.secondaryColor || null, tags: [...(item.tags || [])] });
   }, [item]);
@@ -421,10 +448,128 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
     onClose();
   };
 
-  const saveEditing = () => {
-    onSave({ ...item, ...draft, name: draft.name.trim(), tags: draft.tags.map((tag) => tag.trim()).filter(Boolean) });
-    setSampling(null);
-    setSampleStatus("Changes saved.");
+  const saveEditing = async () => {
+    setMutation("saving");
+    setMutationError("");
+    try {
+      await onSave({ ...item, ...draft, name: draft.name.trim(), tags: draft.tags.map((tag) => tag.trim()).filter(Boolean), palette });
+      setSampling(null);
+      setSampleStatus("Changes saved.");
+    } catch (error) {
+      setMutationError(error?.message || "Changes could not be saved.");
+    } finally {
+      setMutation("idle");
+    }
+  };
+
+  const deleteEditing = async () => {
+    setMutation("deleting");
+    setMutationError("");
+    try {
+      await onDelete(item.id);
+    } catch (error) {
+      setMutationError(error?.message || "This piece could not be deleted.");
+      setMutation("idle");
+    }
+  };
+
+  const styleThis = async () => {
+    setStyling({ status: "loading", outfits: [], gap: null, gapError: "", error: "" });
+    setCommerce(emptyCommerceState());
+    try {
+      const result = await onStyle(item.id);
+      setStyling({ status: "ready", outfits: result.outfits, gap: result.gap, gapError: result.gapError, error: "" });
+    } catch (error) {
+      setStyling({ status: "error", outfits: [], gap: null, gapError: "", error: error?.response?.data?.error || error?.message || "Outfit suggestions could not be prepared." });
+    }
+  };
+
+  const shopGap = async () => {
+    if (!styling.gap?.shopifyQuery) return;
+    setCommerce({ ...emptyCommerceState(), status: "loading" });
+    try {
+      const result = await searchShopifyProducts(styling.gap.shopifyQuery);
+      const products = Array.isArray(result?.products) ? result.products.slice(0, 3) : [];
+      setCommerce({
+        ...emptyCommerceState(),
+        status: products.length ? "ready" : "empty",
+        source: products.length ? result?.source || "shopify" : null,
+        authMode: result?.authMode || null,
+        products,
+        selectedId: products[0]?.id || null,
+        error: products.length ? "" : "No available Shopify products matched this gap. Try again after expanding the demo catalog.",
+      });
+      if (!products.length && isDemoAccount) {
+        setCommerce({
+          ...emptyCommerceState(),
+          status: "ready",
+          source: "demo-fixture",
+          products: DEMO_COMMERCE_FIXTURES,
+          selectedId: DEMO_COMMERCE_FIXTURES[0].id,
+        });
+      }
+    } catch (error) {
+      if (isDemoAccount) {
+        setCommerce({
+          ...emptyCommerceState(),
+          status: "ready",
+          source: "demo-fixture",
+          products: DEMO_COMMERCE_FIXTURES,
+          selectedId: DEMO_COMMERCE_FIXTURES[0].id,
+        });
+      } else {
+        setCommerce({ ...emptyCommerceState(), status: "error", error: error?.message || "Shopify products could not be loaded." });
+      }
+    }
+  };
+
+  const selectProduct = (productId) => {
+    setCommerce((current) => ({
+      ...current,
+      selectedId: productId,
+      cartStatus: "idle",
+      cartError: "",
+      checkoutUrl: "",
+    }));
+  };
+
+  const addSelectedProduct = async () => {
+    const product = commerce.products.find((candidate) => candidate.id === commerce.selectedId);
+    if (product?.source === "demo-fixture") {
+      setCommerce((current) => ({
+        ...current,
+        cartStatus: "preview",
+        cartError: "",
+        checkoutUrl: "",
+      }));
+      return;
+    }
+    if (product?.source !== "shopify" || !product.merchandiseId) return;
+    setCommerce((current) => ({ ...current, cartStatus: "adding", cartError: "", checkoutUrl: "" }));
+    try {
+      const cart = await createShopifyCart(product.merchandiseId, 1, commerce.authMode);
+      if (!cart?.checkoutUrl) throw new Error("Shopify did not return a checkout URL.");
+      setCommerce((current) => ({ ...current, cartStatus: "added", cartError: "", checkoutUrl: cart.checkoutUrl }));
+    } catch (error) {
+      setCommerce((current) => ({
+        ...current,
+        cartStatus: "error",
+        cartError: error?.message || "This item could not be added to your Shopify cart.",
+        checkoutUrl: "",
+      }));
+    }
+  };
+
+  const saveSuggestion = async (suggestion, index) => {
+    setSavingOutfit(index);
+    try {
+      await onSaveOutfit({ ...suggestion, anchorGarmentId: item.id });
+      setSavedSuggestions((current) => [...current, index]);
+    } catch (error) {
+      setStyling((current) => ({ ...current, error: error?.message || "This outfit could not be saved." }));
+    } finally {
+      setSavingOutfit(null);
+    }
   };
 
   const handleImageLoad = (event) => {
@@ -504,6 +649,116 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
       )}
 
       <div className="viewer-details editing">
+        <div className="wardrobe-intelligence">
+          {appearanceCount > 0 && <p className="appearance-count">Seen in {appearanceCount} {appearanceCount === 1 ? "photo" : "photos"}</p>}
+          <button className="style-this-button" type="button" onClick={styleThis} disabled={styling.status === "loading"}>
+            {styling.status === "loading" ? "Styling…" : "Style this"}
+          </button>
+        </div>
+
+        {styling.status === "ready" && (
+          <div className="style-suggestions" aria-label="Outfit suggestions">
+            {styling.outfits.map((outfit, index) => (
+              <article key={`${outfit.name}-${index}`}>
+                <div className="style-suggestion-heading">
+                  <div><span className="style-kind">Owned look · Owned {outfit.garmentIds.length}/{outfit.garmentIds.length}</span><h3>{outfit.name}</h3><p>{outfit.occasion}</p></div>
+                  <button type="button" onClick={() => saveSuggestion(outfit, index)} disabled={savingOutfit === index || savedSuggestions.includes(index)}>
+                    {savedSuggestions.includes(index) ? "Saved" : savingOutfit === index ? "Saving" : "Save outfit"}
+                  </button>
+                </div>
+                <p>{outfit.reason}</p>
+                <div className="style-suggestion-garments">
+                  {outfit.garmentIds.map((id) => items.find((candidate) => candidate.id === id)).filter(Boolean).map((garment) => (
+                    <span key={garment.id}>{garment.name}</span>
+                  ))}
+                </div>
+              </article>
+            ))}
+            {styling.gap && (
+              <article className="complete-look">
+                <div className="complete-look-heading">
+                  <div>
+                    <span className="style-kind">Suggested addition</span>
+                    <h3>Complete the look</h3>
+                  </div>
+                </div>
+                <strong className="gap-product-name">{styling.gap.description}</strong>
+                <p className="gap-impact">
+                  <span>Would complement</span>
+                  <strong>{styling.gap.compatibleWardrobeItemIds.length} pieces already in your wardrobe</strong>
+                </p>
+                <div className="gap-works-with">
+                  <span>Works with</span>
+                  <div>
+                    {styling.gap.compatibleWardrobeItemIds
+                      .map((id) => items.find((candidate) => candidate.id === id))
+                      .filter(Boolean)
+                      .slice(0, 4)
+                      .map((garment) => <small key={garment.id}>{garment.name}</small>)}
+                  </div>
+                </div>
+                <button className="shop-gap-button" type="button" onClick={shopGap} disabled={commerce.status === "loading"}>
+                  {commerce.status === "loading" ? "Searching Shopify…" : commerce.products.length ? "Refresh Shopify picks" : "Shop this gap"}
+                </button>
+
+                {commerce.status === "ready" && (
+                  <div className="shopify-results">
+                    <p>{usingDemoCommerceFixtures ? "Armoire commerce preview" : "Recommended from Shopify"}</p>
+                    <div className="shopify-product-list">
+                      {commerce.products.map((product) => (
+                        <button
+                          className="shopify-product"
+                          data-selected={commerce.selectedId === product.id}
+                          type="button"
+                          key={product.id}
+                          onClick={() => selectProduct(product.id)}
+                          aria-pressed={commerce.selectedId === product.id}
+                        >
+                          <span className="shopify-product-image">
+                            {product.imageUrl
+                              ? <OptimizedImage src={product.imageUrl} alt={product.imageAlt || product.title} sizes="110px" breakpoints={[110, 220]} />
+                              : <span aria-hidden="true">No image</span>}
+                          </span>
+                          <span className="shopify-product-copy">
+                            <strong>{product.title}</strong>
+                            <small>{formatMoney(product.price, product.currencyCode)}</small>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    {commerce.selectedId && commerce.cartStatus !== "added" && (
+                      <button className="add-cart-button" type="button" onClick={addSelectedProduct} disabled={commerce.cartStatus === "adding"}>
+                        {selectedCommerceProduct?.source === "demo-fixture"
+                          ? "View Shopify integration"
+                          : commerce.cartStatus === "adding"
+                            ? "Adding…"
+                            : commerce.cartStatus === "error"
+                              ? "Try add to cart again"
+                              : "Add to cart"}
+                      </button>
+                    )}
+                    {commerce.cartStatus === "preview" && (
+                      <p className="commerce-message integration-preview" role="status">
+                        Live product search and cart checkout connect here when the Headless catalog is available.
+                      </p>
+                    )}
+                    {commerce.cartError && <p className="commerce-message error" role="alert">{commerce.cartError}</p>}
+                    {commerce.cartStatus === "added" && (
+                      <div className="commerce-success" role="status">
+                        <p>Added to your Shopify cart</p>
+                        <button type="button" onClick={() => window.open(commerce.checkoutUrl, "_blank", "noopener,noreferrer")}>Checkout</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {commerce.error && <p className="commerce-message error" role="alert">{commerce.error}</p>}
+              </article>
+            )}
+            {styling.gapError && <p className="commerce-message error" role="status">Complete the Look is temporarily unavailable: {styling.gapError}</p>}
+          </div>
+        )}
+        {styling.error && <p className="unsaved-notice style-error" role="alert">{styling.error} <button type="button" onClick={styleThis}>Try again</button></p>}
+
         <ItemEditor
           draft={draft}
           setDraft={setDraft}
@@ -514,15 +769,16 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
         />
 
         {closeBlocked && <p className="unsaved-notice" role="status">Save or cancel changes before closing.</p>}
+        {mutationError && <p className="unsaved-notice" role="alert">{mutationError}</p>}
 
-        <div className="viewer-actions">
-          <button className="delete-button" type="button" onClick={() => onDelete(item.id)}>
-            <Trash size={15} weight="regular" aria-hidden="true" /> Delete
-          </button>
+        <div className="viewer-actions" aria-busy={mutation !== "idle"}>
+          {!item.demoFixture && <button className="delete-button" type="button" onClick={deleteEditing} disabled={mutation !== "idle"}>
+            <Trash size={15} weight="regular" aria-hidden="true" /> {mutation === "deleting" ? "Deleting" : "Delete"}
+          </button>}
           <span className="action-spacer" />
-          <button className="secondary-button" type="button" onClick={cancelEditing}>Cancel</button>
-          <button className="primary-button" type="button" onClick={saveEditing}>
-            <Check size={15} weight="bold" aria-hidden="true" /> Save
+          <button className="secondary-button" type="button" onClick={cancelEditing} disabled={mutation !== "idle"}>Cancel</button>
+          <button className="primary-button" type="button" onClick={saveEditing} disabled={mutation !== "idle" || !isDirty || !draft.name.trim()}>
+            <Check size={15} weight="bold" aria-hidden="true" /> {mutation === "saving" ? "Saving" : "Save"}
           </button>
         </div>
       </div>
@@ -533,29 +789,81 @@ function ItemViewer({ item, onClose, onSave, onDelete }) {
 }
 
 export function App() {
+  const [auth, setAuth] = useState({ status: "checking", user: null, error: "" });
   const [items, setItems] = useState([]);
+  const [outfits, setOutfits] = useState([]);
+  const [appearances, setAppearances] = useState([]);
   const [activeType, setActiveType] = useState("all");
   const [selectedId, setSelectedId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [selectedOutfitId, setSelectedOutfitId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [seedState, setSeedState] = useState("idle");
   const [error, setError] = useState("");
+  const [loadVersion, setLoadVersion] = useState(0);
+  const [addingTestItem, setAddingTestItem] = useState(false);
 
   useEffect(() => {
-    fetch("/api/import/wardrobe", { cache: "no-store" })
-      .then((response) => {
-        if (!response.ok) throw new Error("Could not load the wardrobe.");
-        return response.json();
+    let active = true;
+    getCurrentUser()
+      .then((user) => {
+        if (!active) return;
+        setAuth(user
+          ? { status: "authenticated", user, error: "" }
+          : { status: "unauthenticated", user: null, error: "" });
       })
-      .then((loadedItems) => {
-        const edits = readEdits();
-        const deleted = readDeletedItems();
-        const visibleItems = loadedItems.filter((item) => !deleted.has(item.id));
-        setItems(visibleItems.map((item) => ({ ...item, ...(edits[item.id] || {}) })));
-      })
-      .catch((requestError) => setError(requestError.message))
-      .finally(() => setLoading(false));
+      .catch((requestError) => {
+        if (active) setAuth({ status: "unauthenticated", user: null, error: requestError?.message || "Authentication could not be checked." });
+      });
+    return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (auth.status !== "authenticated") return undefined;
+    let active = true;
+    setLoading(true);
+    setError("");
+    Promise.all([listWardrobeItems(), listOutfits(), listWardrobeAppearances()])
+      .then(async ([loadedItems, loadedOutfits, loadedAppearances]) => {
+        if (!active) return;
+        setItems(loadedItems);
+        setOutfits(loadedOutfits);
+        setAppearances(loadedAppearances);
+        const isDemoAccount = auth.user?.email?.trim().toLowerCase() === DEMO_EMAIL;
+        const demoFixtures = loadedItems.filter((item) => item.demoFixture);
+        const seedIsCurrent = demoFixtures.length === DEMO_ITEM_COUNT
+          && demoFixtures.every((item) => item.demoSeedVersion === DEMO_SEED_VERSION);
+        if (!isDemoAccount || seedIsCurrent) {
+          setSeedState("ready");
+          return;
+        }
+        setSeedState("preparing");
+        await prepareDemoWardrobe();
+        const prepared = await Promise.all([listWardrobeItems(), listOutfits(), listWardrobeAppearances()]);
+        if (!active) return;
+        setItems(prepared[0]);
+        setOutfits(prepared[1]);
+        setAppearances(prepared[2]);
+        setSeedState("ready");
+      })
+      .catch((requestError) => {
+        if (active) {
+          setSeedState("error");
+          setError(requestError?.response?.data?.error || requestError?.message || "Could not load the wardrobe.");
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [auth.status, auth.user?.email, loadVersion]);
+
   const selectedItem = items.find((item) => item.id === selectedId) || null;
+  const selectedOutfit = outfits.find((outfit) => outfit.id === selectedOutfitId) || null;
+  const itemMap = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
+  const appearanceCounts = useMemo(() => appearances.reduce((counts, appearance) => {
+    if (appearance.wardrobeItemId) counts.set(appearance.wardrobeItemId, (counts.get(appearance.wardrobeItemId) || 0) + 1);
+    return counts;
+  }, new Map()), [appearances]);
 
   const visibleItems = useMemo(() => {
     const filtered = activeType === "all" ? items : items.filter((item) => item.part === activeType);
@@ -564,54 +872,116 @@ export function App() {
         const typeDifference = (TYPE_ORDER[a.part] ?? 99) - (TYPE_ORDER[b.part] ?? 99);
         if (typeDifference) return typeDifference;
       }
-      return a.id.localeCompare(b.id);
+      const orderDifference = (a.fixtureOrder ?? Number.MAX_SAFE_INTEGER) - (b.fixtureOrder ?? Number.MAX_SAFE_INTEGER);
+      return orderDifference || a.id.localeCompare(b.id);
     });
   }, [activeType, items]);
+
+  const visibleOutfits = useMemo(() => outfits
+    .filter((outfit) => outfit.status !== "archived" && outfit.garmentIds.every((id) => itemMap.has(id)))
+    .sort((a, b) => Number(b.demoFixture) - Number(a.demoFixture) || a.name.localeCompare(b.name)), [itemMap, outfits]);
 
   const chooseType = (typeId) => {
     setActiveType(typeId);
     setSelectedId(null);
+    setSelectedOutfitId(null);
   };
 
-  const saveItem = (updatedItem) => {
-    setItems((current) => current.map((item) => item.id === updatedItem.id ? updatedItem : item));
-    persistEdit(updatedItem);
+  const saveItem = async (updatedItem) => {
+    const savedItem = await updateWardrobeItem(updatedItem.id, updatedItem);
+    setItems((current) => current.map((item) => item.id === savedItem.id ? savedItem : item));
+    return savedItem;
   };
 
   const deleteItem = async (id) => {
-    if (id.startsWith("import-")) {
+    const item = items.find((candidate) => candidate.id === id);
+    await deleteWardrobeItem(id);
+    setItems((current) => current.filter((candidate) => candidate.id !== id));
+    setSelectedId(null);
+
+    if (item?.importJobId) {
       try {
-        const response = await fetch(`/api/import/wardrobe/${id}`, { method: "DELETE" });
+        const response = await fetch(`/api/import/wardrobe/import-${item.importJobId}`, { method: "DELETE" });
         if (!response.ok && response.status !== 404) throw new Error("Could not delete the imported item.");
       } catch (requestError) {
-        setError(requestError.message);
-        return;
+        setError(`${requestError.message} The private Base44 record was deleted.`);
       }
     }
-    setItems((current) => current.filter((item) => item.id !== id));
-    removePersistedEdit(id);
-    persistDeletedItem(id);
-    setSelectedId(null);
   };
 
-  const addImportedItem = useCallback((newItem) => {
-    setItems((current) => current.some((item) => item.id === newItem.id) ? current : [...current, newItem]);
-  }, []);
+  const addTestItem = async () => {
+    setAddingTestItem(true);
+    setError("");
+    try {
+      const createdItem = await createWardrobeItem(DEV_TEST_ITEM);
+      setItems((current) => [...current, createdItem]);
+      setActiveType("all");
+    } catch (requestError) {
+      setError(requestError?.message || "Could not add the test item.");
+    } finally {
+      setAddingTestItem(false);
+    }
+  };
 
-  const attachImportedModeledImage = useCallback((jobId, modeledImage) => {
-    const id = `import-${jobId}`;
-    setItems((current) => current.map((item) => item.id === id ? { ...item, modeledImage } : item));
-  }, []);
+  const refreshWardrobeAfterImport = async () => {
+    const [loadedItems, loadedAppearances] = await Promise.all([listWardrobeItems(), listWardrobeAppearances()]);
+    setItems(loadedItems);
+    setAppearances(loadedAppearances);
+    setActiveType("all");
+  };
+
+  const saveStyledOutfit = async (suggestion) => {
+    const created = await saveOutfit(suggestion, items.map((item) => item.id));
+    setOutfits((current) => [...current, created]);
+    return created;
+  };
+
+  const deleteSavedOutfit = async (id) => {
+    await deleteOutfit(id);
+    setOutfits((current) => current.filter((outfit) => outfit.id !== id));
+    setSelectedOutfitId(null);
+  };
+
+  if (auth.status === "checking") {
+    return (
+      <main className="auth-shell auth-checking" aria-busy="true">
+        <p className="auth-eyebrow">Armoire</p>
+        <p className="auth-checking-copy">Opening your private wardrobe</p>
+      </main>
+    );
+  }
+
+  if (auth.status === "unauthenticated") {
+    return <AuthScreen initialError={auth.error} onAuthenticated={(user) => setAuth({ status: "authenticated", user, error: "" })} />;
+  }
 
   return (
-    <div className={`app-shell${selectedItem ? " has-selection" : ""}`}>
+    <div className={`app-shell${selectedItem || selectedOutfit ? " has-selection" : ""}`}>
       <main className="gallery-pane">
         <header className="gallery-header">
           <div className="gallery-meta-row">
-            <p className="piece-count">{items.length} {items.length === 1 ? "piece" : "pieces"}</p>
+            <div className="gallery-summary">
+              <p className="piece-count">{items.length} {items.length === 1 ? "piece" : "pieces"}</p>
+              {import.meta.env.DEV && (
+                <button
+                  className="dev-add-test-item"
+                  type="button"
+                  onClick={addTestItem}
+                  disabled={addingTestItem}
+                  aria-busy={addingTestItem}
+                >
+                  <Plus size={13} weight="regular" aria-hidden="true" />
+                  {addingTestItem ? "Adding" : "Add test item"}
+                </button>
+              )}
+            </div>
+            <div className="account-controls">
+              <span>{auth.user?.email}</span>
+              <button type="button" onClick={logout}>Sign out</button>
+            </div>
           </div>
           <nav className="category-nav" aria-label="Filter wardrobe by item type">
-            {TYPES.map((type) => (
+            {NAV_TYPES.map((type) => (
               <button
                 key={type.id}
                 type="button"
@@ -625,11 +995,12 @@ export function App() {
           </nav>
         </header>
 
-        {error && <p className="status error">{error}</p>}
-        {!error && loading && <p className="status">Loading wardrobe</p>}
+        {error && <p className="status error">{error} <button type="button" onClick={() => setLoadVersion((current) => current + 1)}>Try again</button></p>}
+        {!error && loading && <p className="status">{seedState === "preparing" ? "Preparing your wardrobe…" : "Loading wardrobe"}</p>}
         {!error && !loading && !items.length && <p className="status empty">Drop, paste, or add a photo to import your first piece.</p>}
+        {!error && !loading && activeType === "outfits" && !visibleOutfits.length && <p className="status empty">Style a piece to save your first outfit.</p>}
 
-        {!!items.length && (
+        {!!items.length && activeType !== "outfits" && (
           <section className="gallery-grid" aria-label={`${TYPE_MAP[activeType]?.label || "All"} wardrobe items`}>
             {visibleItems.map((item) => (
               <GalleryItem
@@ -641,10 +1012,22 @@ export function App() {
             ))}
           </section>
         )}
+        {activeType === "outfits" && !!visibleOutfits.length && <OutfitGallery outfits={visibleOutfits} itemMap={itemMap} onOpen={setSelectedOutfitId} />}
       </main>
 
-      {selectedItem && <ItemViewer item={selectedItem} onClose={() => setSelectedId(null)} onSave={saveItem} onDelete={deleteItem} />}
-      <WardrobeImportFlow onGarmentApproved={addImportedItem} onModeledApproved={attachImportedModeledImage} />
+      {selectedItem && <ItemViewer
+        item={selectedItem}
+        items={items}
+        appearanceCount={appearanceCounts.get(selectedItem.id) || 0}
+        isDemoAccount={auth.user?.email?.trim().toLowerCase() === DEMO_EMAIL}
+        onClose={() => setSelectedId(null)}
+        onSave={saveItem}
+        onDelete={deleteItem}
+        onStyle={styleWardrobeItem}
+        onSaveOutfit={saveStyledOutfit}
+      />}
+      {selectedOutfit && <OutfitViewer outfit={selectedOutfit} itemMap={itemMap} onClose={() => setSelectedOutfitId(null)} onDelete={deleteSavedOutfit} />}
+      <WardrobeImportFlow onWardrobeChanged={refreshWardrobeAfterImport} />
     </div>
   );
 }

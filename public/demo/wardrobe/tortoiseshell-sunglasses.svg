@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Tortoiseshell Sunglasses</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8f715f"/>
+      <stop offset=".42" stop-color="#76523c"/>
+      <stop offset="1" stop-color="#5c402f"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="563" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#b4865c;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#5c402f;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M72 210q83-27 173 8l-14 104q-129 54-159-44zM440 210q-83-27-173 8l14 104q129 54 159-44z" fill="url(#cloth)"/><path d="M235 229q21-19 42 0M72 220L25 187M440 220l47-33" fill="none" stroke="#76523c" stroke-width="18" stroke-linecap="round"/><path d="M91 230q65-20 132 1l-9 71q-94 38-123-33zM421 230q-65-20-132 1l9 71q94 38 123-33z" fill="#75573c" opacity=".82"/><g fill="#b4865c" opacity=".65"><circle cx="85" cy="220" r="8"/><circle cx="218" cy="230" r="7"/><circle cx="427" cy="222" r="8"/><circle cx="294" cy="230" r="7"/></g></g></g>
+</svg>

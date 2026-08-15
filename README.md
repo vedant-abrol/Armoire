@@ -2,21 +2,29 @@
 
 # Armoire
 
-### Your closet, infinitely styled.
+### Your closet, intelligently styled.
 
-Turn the clothes you already own into a private digital wardrobe—and discover new ways to wear them with AI.
+A private, AI-assisted wardrobe that turns owned clothes into curated outfits and identifies the pieces that would make the wardrobe work harder.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-191919?style=flat-square)](LICENSE)
 [![Node 22+](https://img.shields.io/badge/node-22%2B-191919?style=flat-square)](package.json)
-[![Local first](https://img.shields.io/badge/local--first-yes-191919?style=flat-square)](#private-by-design)
+[![Hosted on Base44](https://img.shields.io/badge/hosted-Base44-6e302e?style=flat-square)](https://armoire-d4db6c05.base44.app)
+
+**[Open the live Armoire demo](https://armoire-d4db6c05.base44.app)**
 
 </div>
 
-## Meet Armoire
+## What Armoire does
 
-Armoire transforms everyday outfit photos into an organized, visual wardrobe. It finds each garment, creates polished product cutouts, generates editorial modeled previews, and helps you build complete looks from pieces you already own.
+Armoire organizes a personal wardrobe, extracts garments from source photos, creates clean cutouts and modeled previews, recommends complete outfits from owned pieces, and identifies high-value wardrobe gaps.
 
-Everything stays on your machine. Your clothes, photos, and personal style remain yours.
+- **Private accounts** — Base44 authentication and per-user wardrobe data.
+- **Visual wardrobe** — searchable garment gallery with editable details and color palettes.
+- **AI import pipeline** — source-photo analysis, cutout generation, review, and approval.
+- **Style This** — curated outfits built from garments the user already owns.
+- **Complete the Look** — a wardrobe-gap recommendation connected to Shopify product search and cart creation.
+- **Saved outfits** — reusable looks with garments, occasion, season, and styling rationale.
+- **Reliable hackathon demo** — 80 deterministic wardrobe pieces, 59 appearances, and 8 curated outfits for the dedicated demo account.
 
 <table>
   <tr>
@@ -29,77 +37,123 @@ Everything stays on your machine. Your clothes, photos, and personal style remai
   </tr>
 </table>
 
-## From camera roll to curated closet
+## Hackathon demo path
+
+The dedicated account is `vedant1311nov@gmail.com`. Its canonical Navy Overshirt flow produces a deterministic **Camel Chore Jacket** wardrobe-gap recommendation that complements 11 owned pieces.
+
+If live Shopify search is unavailable, only this demo account receives three polished local commerce previews:
+
+- Camel Chore Jacket — $89
+- Camel Work Jacket — $105
+- Sand Overshirt — $79
+
+These records are explicitly marked `source: "demo-fixture"`. They never contain a Shopify variant ID and never call `cartCreate`; their CTA is **View Shopify Integration**. A real Shopify cart is created only from an available variant GID returned by the Storefront API.
+
+See [the demo reset and seed runbook](docs/hackathon-demo.md) before presenting.
+
+## Shopify integration
+
+Storefront requests run only in Base44 backend functions. Authentication is attempted in this order:
+
+1. Private Headless token using `Shopify-Storefront-Private-Token`
+2. Public Headless token using `X-Shopify-Storefront-Access-Token`
+3. Tokenless access as a final fallback
+
+Private requests forward a validated buyer IP when Base44 supplies one. If public authentication succeeds after a private 401/403, the working public mode is reused for the current runtime and passed from product search into cart creation. Private credentials are never bundled into frontend code.
+
+The deployed store must still contain active, available products published to the same Headless sales channel. Until Shopify accepts one of the configured tokens, the demo account safely uses the local preview above and no checkout is fabricated.
+
+## Architecture
 
 ```text
-Outfit photos  →  Garment detection  →  Clean cutouts  →  Modeled previews  →  Styled looks
+React + Vite UI
+      ↓
+Base44 authentication and entities
+      ↓
+Base44 backend functions
+      ├── OpenAI garment analysis and styling
+      └── Shopify Storefront product search and cart creation
 ```
 
-- **Capture every piece** — detect individual garments from outfit and model photos.
-- **Create clean cutouts** — turn each item into a polished, transparent product image.
-- **See it styled** — generate an optional identity-preserving editorial preview.
-- **Build new looks** — combine pieces from your wardrobe into complete modeled outfits.
-- **Stay in control** — drag, drop, paste, edit, review, regenerate, and approve every item.
+Core Base44 resources live under `base44/`:
 
-## Quick start
+- `entities/` — wardrobe items, source photos, import jobs, appearances, and outfits
+- `functions/` — import, styling, demo seed/reset, Shopify search, and Shopify cart creation
+- `shared/` — deterministic demo data and the server-only Shopify client
+- `auth/` — application authentication configuration
+
+## Local development
+
+Requirements: Node.js 22+, npm, and access to the linked Base44 app.
 
 ```bash
 git clone https://github.com/vedant-abrol/Armoire.git
 cd Armoire
 npm install
-cp .env.example .env
+npx base44 login
+```
+
+Run the Base44 development server and Vite frontend in separate terminals:
+
+```bash
+npx base44 dev
+```
+
+```bash
 npm run dev
 ```
 
-Add `OPENAI_API_KEY` to `.env`, then place a PNG reference photo at `data/model-reference.png` to enable importing and modeled previews.
+Open [localhost:5173](http://localhost:5173).
 
-Open [localhost:5173](http://localhost:5173) and start building your wardrobe.
+## Base44 secrets
 
-## Bring your wardrobe in
+Configure these through Base44; never commit their values:
 
-### With Codex
+| Secret | Purpose |
+| --- | --- |
+| `OPENAI_API_KEY` | Garment analysis and generation |
+| `SHOPIFY_STORE_DOMAIN` | The development store's `*.myshopify.com` domain |
+| `SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | Server-side Headless Storefront access |
+| `SHOPIFY_STOREFRONT_PUBLIC_TOKEN` | Public Headless fallback access |
 
-Armoire includes two ready-to-use Codex skills: one imports clothes and creates modeled item photos; the other styles complete outfits and generates a personal lookbook.
+## Validation and deployment
 
-```text
-$import-clothes Import the clothes from ~/Pictures/outfits, create modeled photos, and add them to Armoire.
-
-$generate-outfits Create modeled outfit ideas from my Armoire wardrobe.
+```bash
+npm run check
+npx base44 deploy -y
 ```
 
-The import skill reviews every cutout and modeled image before saving approved pieces to `data/library.json` and `data/imported/`. The outfit skill curates, generates, verifies, and saves complete looks under `data/`.
+`npm run check` verifies the canonical demo assets and seed behavior, then builds the production frontend. `npx base44 deploy -y` publishes the entity schemas, backend functions, authentication configuration, and built site.
 
-### With the web app
+## Demo reset
 
-Configure `OPENAI_API_KEY` and `data/model-reference.png`, launch Armoire, and import photos directly through the browser. The interface supports drag and drop, paste, editing, review, regeneration, and approval.
+Reset only canonical demo fixtures:
 
-## Private by design
+```bash
+ARMOIRE_DEMO_PASSWORD='your-demo-account-password' npm run demo:reset
+```
 
-Armoire is local-first. Originals, generation jobs, wardrobe data, and generated images are stored in your local `data/` directory—not in a hosted Armoire account.
+Seed or repair missing fixtures without deleting data:
 
-Only the images required for AI processing are sent to the OpenAI API when you choose to import or generate something.
+```bash
+ARMOIRE_DEMO_PASSWORD='your-demo-account-password' npm run demo:seed
+```
 
-## Configuration
+The password is read from the process environment and is never stored or printed. Real wardrobe records are preserved by the normal reset path.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `OPENAI_API_KEY` | Required | Enables garment analysis and image generation |
-| `OPENAI_VISION_MODEL` | `gpt-5.4-mini` | Detects and describes garments |
-| `OPENAI_IMAGE_MODEL` | `gpt-image-2` | Creates cutouts and modeled previews |
-| `OPENAI_IMAGE_QUALITY` | `high` | Controls generated image quality |
-| `WARDROBE_MODEL_REFERENCE` | `data/model-reference.png` | Sets the model identity reference |
-| `WARDROBE_DATA_DIR` | `data` | Stores the local wardrobe library |
+## Codex skills
 
-## For agents
+Armoire includes two project skills for local asset workflows:
 
-When setting up Armoire for a user, ask how they want to import their clothes:
+```text
+$import-clothes Import garments from a photo folder and add approved assets to Armoire.
 
-- **Codex:** Ask for a folder or camera-roll location and a model-reference PNG, then follow the bundled [import skill](.agents/skills/import-clothes/SKILL.md). After importing, offer to create modeled looks with the [outfit-generation skill](.agents/skills/generate-outfits/SKILL.md).
-- **Web UI:** Help the user configure `OPENAI_API_KEY` and `data/model-reference.png`, then let them import through the app.
+$generate-outfits Create modeled outfit ideas from clothes already in Armoire.
+```
 
 ## Built with
 
-React · Vite · OpenAI Responses API · OpenAI Images API · Sharp
+React · Vite · Base44 · OpenAI · Shopify Storefront API · Sharp
 
 ## License
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Navy Polo</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f5a6b"/>
+      <stop offset=".42" stop-color="#28364a"/>
+      <stop offset="1" stop-color="#1f2a3a"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="821" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#536174;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#1f2a3a;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M176 126L216 94Q256 119 296 94L336 126L421 197L370 246L329 202L333 438Q256 461 179 438L183 202L142 246L91 197Z M226 102Q256 126 286 102L277 158H235Z" fill="url(#cloth)" fill-rule="evenodd"/><path d="M226 102l30 49-21 20-21-56zM286 102l-30 49 21 20 21-56z" fill="var(--detail)" opacity=".84"/><path d="M256 151v91" stroke="var(--detail)" opacity=".5"/><circle cx="256" cy="169.0" r="3.1" fill="#1a2431" opacity=".7"/><circle cx="256" cy="194.0" r="3.1" fill="#1a2431" opacity=".7"/><circle cx="256" cy="219.0" r="3.1" fill="#1a2431" opacity=".7"/><path d="M180 418q76 21 153 0" fill="none" stroke="var(--detail)" opacity=".3"/></g></g>
+</svg>

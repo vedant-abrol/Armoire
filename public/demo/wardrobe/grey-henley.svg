@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Grey Henley</title>
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9b9b97"/>
+      <stop offset=".42" stop-color="#858580"/>
+      <stop offset="1" stop-color="#686864"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#171714" flood-opacity=".16"/>
+    </filter>
+    <filter id="fabric" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="597" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values=".08 0 0 0 .45  0 .08 0 0 .45  0 0 .08 0 .45  0 0 0 .13 0" result="softNoise"/>
+      <feBlend in="SourceGraphic" in2="softNoise" mode="soft-light"/>
+    </filter>
+  </defs>
+  <style>.garment{--detail:#aaa9a3;filter:url(#soft-shadow)}.garment&gt;*{vector-effect:non-scaling-stroke}.garment{stroke:#686864;stroke-width:1.15;stroke-linejoin:round;stroke-linecap:round}.garment{filter:url(#soft-shadow)}</style>
+  <g filter="url(#fabric)"><g class="garment"><path d="M174 123L216 92Q256 117 296 92L338 123L420 198L369 246L329 200L333 438Q256 460 179 438L183 200L143 246L92 198Z M226 101Q256 128 286 101Q278 155 256 155Q234 155 226 101Z" fill="url(#cloth)" fill-rule="evenodd"/><path d="M256 149v91" stroke="var(--detail)" stroke-width="5" opacity=".5"/><circle cx="256" cy="168.0" r="3.1" fill="#aaa9a3" opacity=".7"/><circle cx="256" cy="184.7" r="3.1" fill="#aaa9a3" opacity=".7"/><circle cx="256" cy="201.3" r="3.1" fill="#aaa9a3" opacity=".7"/><circle cx="256" cy="218.0" r="3.1" fill="#aaa9a3" opacity=".7"/><path d="M182 418q74 21 150 0" fill="none" stroke="var(--detail)" opacity=".28"/></g></g>
+</svg>
