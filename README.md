@@ -101,10 +101,6 @@ When setting up Armoire for a user, ask how they want to import their clothes:
 
 React · Vite · OpenAI Responses API · OpenAI Images API · Sharp
 
-## Acknowledgments
-
-Armoire builds on the original open-source [Wardrobe project](https://github.com/tandpfun/wardrobe) and its vision for a personal, AI-powered closet.
-
 ## License
 
 [MIT](LICENSE)
